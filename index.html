@@ -189,7 +189,7 @@
             </button>
         </div>
         <div class="footer">©Copyrights : Arthur Lenoble, Louis Robert (Opal AI France) Feb 2025
-        Opal AI et le logo opal artificial intelligence sont des marques de Opal AI France. The code of Opal is owned by Opal AI France and Uldeon.</div>
+        Opal AI et le logo opal artificial intelligence sont des marques de Opal AI France. The code of Opal is owned by Opal AI France and Uldeon.</br><strong>Opal is up to date.</strong></div>
     </div>
     
 
@@ -645,7 +645,7 @@
 
     // Vérifier si la réponse est dans le cache
     const reponse = answersCache.get(cleanedInput) || obtenirReponse(cleanedInput);
-    afficherMessage(`Opal 1.0 Poet IQ150: ${reponse}`, 'bot');
+    afficherMessage(`Opal: ${reponse}`, 'bot');
 
     // Ajouter au cache pour un usage futur
     if (!answersCache.has(cleanedInput)) {
