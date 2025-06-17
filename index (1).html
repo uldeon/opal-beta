@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta name="msvalidate.01" content="1BD8214BA4DEB3CD3FA6CBD2EC52E460" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opal AI</title>
+    <style>
+        @keyframes fadeInZoomIn {
+          0% {
+            opacity: 0;
+          }
+          100% {
+            opacity: 1;
+          }
+        }
+        @keyframes colorChange {
+            0% {
+                color: #28709B;
+            }
+            50% {
+                color: #072232;
+            }
+            100% {
+                color: #ffffff;
+            }
+        }
+        @keyframes zoomInOut {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+        body {
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+.chat-container {
+    width: 99%;
+    height: 99vh;
+    background: #1e1e1e;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-header {
+    background: #000000;
+    color: #ffffff;
+    padding: 15px;
+    text-align: center;
+    border-bottom: 1px solid #3c3c3c;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-header img {
+    width: 120px;
+    height: auto;
+    border-radius: 10px;
+    animation: zoomInOut 3s;
+}
+
+.chat-header img:hover {
+    transform: scale(1.05);
+}
+
+.new-chat-button {
+    background: #494a49;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background 0.3s;
+    animation: zoomInOut 2s;
+}
+
+.new-chat-button:hover {
+    background: #0056b3;
+    transform: scale(1.05);
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    border-bottom: 1px solid #3c3c3c;
+    animation: fadeInZoomIn 1s;
+}
+
+.chat-message {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 5px;
+    animation: fadeInZoomIn 1s;
+}
+
+.chat-message.user {
+    background: #4c4c4c;
+    text-align: right;
+}
+
+.chat-message.bot {
+    background: #333333;
+    text-align: left;
+}
+
+.chat-input {
+    display: flex;
+    padding: 15px;
+    border-top: 1px solid #3c3c3c;
+}
+
+.chat-input input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #3c3c3c;
+    border-radius: 5px;
+    background: #252525;
+    color: #e0e0e0;
+    animation: zoomInOut 2s;
+}
+
+.chat-input button {
+    margin-left: 10px;
+    padding: 10px 20px;
+    background: #494a49;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+    animation: zoomInOut 2s;
+}
+
+.chat-input button:hover {
+    background: #0056b3;
+    transform: scale(1.05);
+}
+
+.chat-input-button-text {
+    animation: colorChange 3s;
+}
+
+.footer {
+    font-size: 10px;
+    font-family: 'Helvetica', 'Arial', sans-serif;
+    padding: 10px;
+    background: #000000;
+    color: white;
+    border-radius: 7px;
+    animation: fadeInZoomIn 2s;
+    text-align: center;
+}
+
+.footer:hover {
+    transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <img src="Opal.png" alt="Opal AI">
+            <a href="https://uldeon.github.io/Opal-news/">
+            <button class="new-chat-button">Opal News</button>
+            </a>
+            <button class="new-chat-button" onclick="newChat()">New Chat</button>
+        </div>
+        <div class="chat-messages" id="chat-messages"></div>
+        <div class="chat-input">
+            <input type="text" id="user-input" placeholder="Tapez votre message..." />
+            <button onclick="sendMessage()">
+                <div class="chat-input-button-text">Envoyer</div>
+            </button>
+        </div>
+        <div class="footer">©Copyrights : Arthur Lenoble, Louis Robert (Opal AI France) Feb 2025
+        Opal AI et le logo opal artificial intelligence sont des marques de Opal AI France. The code of Opal is owned by Opal AI France and Uldeon.</div>
+    </div>
+    
+
+    <script>
+        const answersCache = new Map();
+        const answers = {
+            "bonjour": "Bonjour ! Je suis Opal™ 1.0 Poet IQ150, la toute première intelligence artificielle de Opal AI. 👋",
+            "hello": "Hello ! I'm Opal™ 1.0 Poet IQ150, the first artificial intelligence of Opal AI. 👋",
+            "qui estu ?": "Je suis Opal™ 1.0 Poet IQ150, une intelligence artificielle développée par Opal AI. 👋",
+            "merci" : "Mais de rien ! J'espère pouvoir t'aider à nouveau à l'avenir ! 😉",
+            "quel est ton but ?": "Mon but est de t'aider en répondant à tes questions et en fournissant des informations utiles. 😀",
+            "comment puisje te poser une question ?": "Tu peux simplement taper ta question dans la zone de texte et cliquer sur 'Envoyer'.😃",
+            "que peuxtu faire ?": "Je peux répondre à des questions, fournir des informations et t'aider avec des tâches simples.😁",
+            "peuxtu maider avec mes devoirs ?": "Je peux essayer ! Pose ta question et je ferai de mon mieux pour t'aider.🙂",
+            "quelle est la capitale de la france ?": "La capitale de la France est Paris.",
+            "quel est le plus grand océan du monde ?": "Le plus grand océan du monde est l'océan Pacifique.",
+            "qui a écrit le petit prince ?": "'Le Petit Prince' a été écrit par Antoine de Saint-Exupéry.",
+            "racontemoi une blague": "Pourquoi les plongeurs plongent-ils toujours en arrière et jamais en avant ? Parce que sinon ils tombent encore dans le bateau !",
+            "quel est ton film préféré ?": "Je n'ai pas de film préféré, mais j'aime beaucoup les films de science-fiction !",
+            "quelles sont les dernières nouvelles ?": "Je ne peux pas accéder aux dernières nouvelles en temps réel, mais je peux t'aider avec des informations générales.",
+            "questceque lintelligence artificielle ?": "L'intelligence artificielle (IA) est un domaine de l'informatique qui vise à créer des machines capables de réaliser des tâches nécessitant normalement l'intelligence humaine.",
+            "comment fonctionne un ordinateur ?": "Un ordinateur fonctionne en exécutant des instructions sous forme de code binaire, traitées par le processeur, et en utilisant des composants comme la mémoire et le stockage pour manipuler et stocker des données.",
+            "questceque le changement climatique ?": "Le changement climatique est une modification à long terme des statistiques climatiques, notamment les variations de température et des précipitations, souvent causée par l'activité humaine.",
+            "qui a découvert lamérique ?": "L'Amérique a été découverte par Christophe Colomb en 1492.",
+            "questceque la photosynthèse ?": "La photosynthèse est le processus par lequel les plantes, les algues et certaines bactéries convertissent la lumière solaire en énergie chimique, produisant de la matière organique à partir du dioxyde de carbone et de l'eau.",
+            "qui a peint la joconde ?": "La Joconde a été peinte par Léonard de Vinci.",
+            "questceque la relativité générale ?": "La relativité générale est une théorie développée par Albert Einstein qui décrit la gravitation comme une courbure de l'espace-temps causée par la masse et l'énergie.",
+            "qui a inventé lampoule électrique ?": "L'ampoule électrique a été inventée par Thomas Edison.",
+            "questceque le bigbang ?": "Le Big Bang est une théorie scientifique qui décrit l'origine et l'évolution de l'univers, qui aurait commencé par une singularité extrêmement chaude et dense il y a environ 13,8 milliards d'années.",
+            "qui a écrit 1984 ?": "'1984' a été écrit par George Orwell.",
+            "questceque la blockchain ?": "La blockchain est une technologie de registre distribué qui enregistre des transactions de manière sécurisée et transparente sur un réseau décentralisé.",
+            "qui a fondé microsoft ?": "Microsoft a été fondé par Bill Gates et Paul Allen.",
+            "questce que lénergie renouvelable ?": "L'énergie renouvelable est une énergie produite à partir de sources naturelles qui se renouvellent rapidement, comme le soleil, le vent, l'eau et la biomasse.",
+            "qui a découvert la pénicilline ?": "La pénicilline a été découverte par Alexander Fleming.",
+            "questce que la théorie de lévolution ?": "La théorie de l'évolution, proposée par Charles Darwin, explique comment les espèces changent au fil du temps par le processus de sélection naturelle.",
+            "qui a composé la 9ème symphonie ?": "La 9ème symphonie a été composée par Ludwig van Beethoven.",
+            "questce que linternet des objets ?": "L'Internet des objets (IoT) est un réseau de dispositifs physiques connectés à Internet, capables de collecter et d'échanger des données.",
+            "qui a inventé le téléphone ?": "Le téléphone a été inventé par Alexander Graham Bell.",
+            "questce que la physique quantique ?": "La physique quantique est une branche de la physique qui décrit le comportement des particules à l'échelle atomique et subatomique.",
+            "qui a écrit don quichotte ?": "'Don Quichotte' a été écrit par Miguel de Cervantès.",
+            "questce que lintelligence émotionnelle ?": "L'intelligence émotionnelle est la capacité à reconnaître, comprendre et gérer ses propres émotions, ainsi que celles des autres.",
+            "qui a peint la nuit étoilée ?": "'La Nuit étoilée' a été peinte par Vincent van Gogh.",
+            "questce que la cryptographie ?": "La cryptographie est la pratique de sécuriser l'information en la transformant en un format illisible pour les non-autorisés.",
+            "qui a fondé apple ?": "Apple a été fondé par Steve Jobs, Steve Wozniak et Ronald Wayne.",
+            "questce que la réalité augmentée ?": "La réalité augmentée (AR) est une technologie qui superpose des éléments virtuels au monde réel, souvent via des dispositifs comme des smartphones ou des lunettes spéciales.",
+            "qui a écrit roméo et juliette ?": "'Roméo et Juliette' a été écrit par William Shakespeare.",
+            "questce que le machine learning ?": "Le machine learning est une méthode d'analyse de données qui permet aux ordinateurs d'apprendre à partir de l'expérience et de s'améliorer sans être explicitement programmés.",
+            "qui a découvert la structure de ladn ?": "La structure de l'ADN a été découverte par James Watson et Francis Crick, avec l'aide des travaux de Rosalind Franklin et Maurice Wilkins.",
+            "quelle est la capitale de lallemagne ?": "La capitale de l'Allemagne est Berlin.",
+            "quelle est la capitale de litalie ?": "La capitale de l'Italie est Rome.",
+            "quelle est la capitale de lespagne ?": "La capitale de l'Espagne est Madrid.",
+            "quelle est la capitale du japon ?": "La capitale du Japon est Tokyo.",
+            "quelle est la capitale de la chine ?": "La capitale de la Chine est Pékin.",
+            "quelle est la capitale de linde ?": "La capitale de l'Inde est New Delhi.",
+            "quelle est la capitale du brésil ?": "La capitale du Brésil est Brasília.",
+            "quelle est la capitale de laustralie ?": "La capitale de l'Australie est Canberra.",
+            "quelle est la capitale du canada ?": "La capitale du Canada est Ottawa.",
+            "quelle est la capitale de la russie ?": "La capitale de la Russie est Moscou.",
+            "quelle est la capitale de lafrique du sud ?": "L'Afrique du Sud a trois capitales : Pretoria (exécutive), Le Cap (législative) et Bloemfontein (judiciaire).",
+            "quelle est la capitale de largentine ?": "La capitale de l'Argentine est Buenos Aires.",
+            "quelle est la capitale de légypte ?": "La capitale de l'Égypte est Le Caire.",
+            "quelle est la capitale de la turquie ?": "La capitale de la Turquie est Ankara.",
+            "quelle est la capitale de la grèce ?": "La capitale de la Grèce est Athènes.",
+            "quelle est la capitale de la suède ?": "La capitale de la Suède est Stockholm.",
+            "quelle est la capitale de la norvège ?": "La capitale de la Norvège est Oslo.",
+            "quelle est la capitale du danemark ?": "La capitale du Danemark est Copenhague.",
+            "quelle est la capitale de la finlande ?": "La capitale de la Finlande est Helsinki.",
+            "quelle est la capitale de la suisse ?": "La capitale de la Suisse est Berne.",
+            "quelle est la capitale de lautriche ?": "La capitale de l'Autriche est Vienne.",
+            "quelle est la capitale des pays-bas ?": "La capitale des Pays-Bas est Amsterdam.",
+            "quelle est la capitale de la belgique ?": "La capitale de la Belgique est Bruxelles.",
+            "quelle est la capitale du portugal ?": "La capitale du Portugal est Lisbonne.",
+            "quelle est la capitale de la pologne ?": "La capitale de la Pologne est Varsovie.",
+            "quelle est la capitale de la république tchèque ?": "La capitale de la République tchèque est Prague.",
+            "quelle est la capitale de la hongrie ?": "La capitale de la Hongrie est Budapest.",
+            "quelle est la capitale de la roumanie ?": "La capitale de la Roumanie est Bucarest.",
+            "quelle est la capitale de la bulgarie ?": "La capitale de la Bulgarie est Sofia.",
+            "quelle est la capitale de la serbie ?": "La capitale de la Serbie est Belgrade.",
+            "quelle est la capitale de la croatie ?": "La capitale de la Croatie est Zagreb.",
+            "quelle est la capitale de la slovénie ?": "La capitale de la Slovénie est Ljubljana.",
+            "quelle est la capitale de la slovaquie ?": "La capitale de la Slovaquie est Bratislava.",
+            "quelle est la capitale de lukraine ?": "La capitale de l'Ukraine est Kiev.",
+            "quelle est la capitale de la biélorussie ?": "La capitale de la Biélorussie est Minsk.",
+            "quelle est la capitale de la moldavie ?": "La capitale de la Moldavie est Chișinău.",
+            "quelle est la capitale de lirlande ?": "La capitale de l'Irlande est Dublin.",
+            "quelle est la capitale du royaume-uni ?": "La capitale du Royaume-Uni est Londres.",
+            "quelle est la capitale de lislande ?": "La capitale de l'Islande est Reykjavik.",
+            "quelle est la capitale de la lettonie ?": "La capitale de la Lettonie est Riga.",
+            "quelle est la capitale de la lituanie ?": "La capitale de la Lituanie est Vilnius.",
+            "quelle est la capitale de lestonie ?": "La capitale de l'Estonie est Tallinn.",
+            "quelle est la capitale de la géorgie ?": "La capitale de la Géorgie est Tbilissi.",
+            "quelle est la capitale de larménie ?": "La capitale de l'Arménie est Erevan.",
+            "quelle est la capitale de lazerbaïdjan ?": "La capitale de l'Azerbaïdjan est Bakou.",
+            "quelle est la capitale du kazakhstan ?": "La capitale du Kazakhstan est Astana.",
+            "quelle est la capitale de louzbékistan ?": "La capitale de l'Ouzbékistan est Tachkent.",
+            "quelle est la capitale du turkménistan ?": "La capitale du Turkménistan est Achgabat.",
+            "quelle est la capitale du kirghizistan ?": "La capitale du Kirghizistan est Bichkek.",
+            "quelle est la capitale du tadjikistan ?": "La capitale du Tadjikistan est Douchanbé.",
+            "quelle est la capitale de lafghanistan ?": "La capitale de l'Afghanistan est Kaboul.",
+            "quelle est la capitale du pakistan ?": "La capitale du Pakistan est Islamabad.",
+            "quelle est la capitale du bangladesh ?": "La capitale du Bangladesh est Dacca.",
+            "quelle est la capitale du népal ?": "La capitale du Népal est Katmandou.",
+            "quelle est la capitale du sri lanka ?": "La capitale du Sri Lanka est Sri Jayawardenapura Kotte.",
+            "quelle est la capitale de la birmanie ?": "La capitale de la Birmanie est Naypyidaw.",
+            "quelle est la capitale de la thaïlande ?": "La capitale de la Thaïlande est Bangkok.",
+            "quelle est la capitale du laos ?": "La capitale du Laos est Vientiane.",
+            "quelle est la capitale du cambodge ?": "La capitale du Cambodge est Phnom Penh.",
+            "quelle est la capitale du vietnam ?": "La capitale du Vietnam est Hanoï.",
+            "quelle est la capitale de la malaisie ?": "La capitale de la Malaisie est Kuala Lumpur.",
+            "quelle est la capitale de singapour ?": "Singapour est une cité-État, donc sa capitale est Singapour.",
+            "quelle est la capitale de lindonésie ?": "La capitale de l'Indonésie est Jakarta.",
+            "quelle est la capitale des philippines ?": "La capitale des Philippines est Manille.",
+            "quelle est la capitale de la corée du sud ?": "La capitale de la Corée du Sud est Séoul.",
+            "quelle est la capitale de la corée du nord ?": "La capitale de la Corée du Nord est Pyongyang.",
+            "quelle est la capitale de la mongolie ?": "La capitale de la Mongolie est Oulan-Bator.",
+            "quelle est la capitale de taïwan ?": "La capitale de Taïwan est Taipei.",
+            "quelle est la capitale de liran ?": "La capitale de l'Iran est Téhéran.",
+            "quelle est la capitale de lirak ?": "La capitale de l'Irak est Bagdad.",
+            "quelle est la capitale de la syrie ?": "La capitale de la Syrie est Damas.",
+            "quelle est la capitale du liban ?": "La capitale du Liban est Beyrouth.",
+            "quelle est la capitale de la jordanie ?": "La capitale de la Jordanie est Amman.",
+            "quelle est la capitale disraël ?": "La capitale d'Israël est Jérusalem.",
+            "quelle est la capitale de larabie saoudite ?": "La capitale de l'Arabie Saoudite est Riyad.",
+            "quelle est la capitale du yémen ?": "La capitale du Yémen est Sanaa.",
+            "quelle est la capitale doman ?": "La capitale d'Oman est Mascate.",
+            "quelle est la capitale des émirats arabes unis ?": "La capitale des Émirats Arabes Unis est Abou Dabi.",
+            "quelle est la capitale du qatar ?": "La capitale du Qatar est Doha.",
+            "quelle est la capitale du koweït ?": "La capitale du Koweït est Koweït City.",
+            "quelle est la capitale de bahreïn ?": "La capitale de Bahreïn est Manama.",
+            "quelle est la capitale de lalgérie ?": "La capitale de l'Algérie est Alger.",
+            "quelle est la capitale de la tunisie ?": "La capitale de la Tunisie est Tunis.",
+            "quelle est la capitale du maroc ?": "La capitale du Maroc est Rabat.",
+            "quelle est la capitale de la libye ?": "La capitale de la Libye est Tripoli.",
+            "quelle est la capitale du soudan ?": "La capitale du Soudan est Khartoum.",
+            "quelle est la capitale de léthiopie ?": "La capitale de l'Éthiopie est Addis-Abeba.",
+            "quelle est la capitale du kenya ?": "La capitale du Kenya est Nairobi.",
+            "quelle est la capitale de la tanzanie ?": "La capitale de la Tanzanie est Dodoma.",
+            "quelle est la capitale de louganda ?": "La capitale de l'Ouganda est Kampala.",
+            "quelle est la capitale du rwanda ?": "La capitale du Rwanda est Kigali.",
+            "quelle est la capitale du burundi ?": "La capitale du Burundi est Gitega.",
+            "quelle est la capitale de la somalie ?": "La capitale de la Somalie est Mogadiscio.",
+            "quelle est la capitale de djibouti ?": "La capitale de Djibouti est Djibouti.",
+            "quelle est la capitale de lérythrée ?": "La capitale de l'Érythrée est Asmara.",
+            "quelle est la capitale de luruguay ?": "La capitale de l'Uruguay est Montevideo.",
+            "quelle est la capitale de la macédoine du nord ?": "La capitale de la Macédoine du Nord est Skopje.",
+            "questce quune intelligence artificielle ?":"Une intelligence artificielle est un programme qui génère différentes choses grâce à un entrainement. ",
+            "questce quun trou noir ?": "Un trou noir est une région de l'espace où la gravité est si forte que rien, pas même la lumière, ne peut s'en échapper.",
+            "questce que la théorie des cordes ?": "La théorie des cordes est un cadre théorique dans lequel les particules fondamentales de l'univers sont modélisées comme des 'cordes' unidimensionnelles plutôt que comme des points.",
+"questce que la mécanique quantique ?": "La mécanique quantique est une branche de la physique qui décrit le comportement des particules à l'échelle atomique et subatomique.",
+"questce que lénergie nucléaire ?": "L'énergie nucléaire est produite par la fission ou la fusion d'atomes, libérant une grande quantité d'énergie.",
+"questce que la fusion nucléaire ?": "La fusion nucléaire est un processus où des noyaux légers se combinent pour former des noyaux plus lourds, libérant de l'énergie.",
+"questce que la fission nucléaire ?": "La fission nucléaire est un processus où un noyau lourd se divise en noyaux plus légers, libérant de l'énergie.",
+"questce que lintelligence artificielle générative ?": "L'intelligence artificielle générative est une forme d'IA capable de créer du contenu nouveau, comme des images, de la musique ou du texte, à partir de données existantes.",
+"questce que le deep learning ?": "Le deep learning est une sous-catégorie du machine learning qui utilise des réseaux de neurones pour modéliser des abstractions de données complexes.",
+"questce que linformatique quantique ?": "L'informatique quantique utilise les principes de la mécanique quantique pour traiter l'information, permettant des calculs beaucoup plus rapides que les ordinateurs classiques pour certains types de problèmes.",
+"questce que la blockchain ?": "La blockchain est une technologie de registre distribué qui enregistre des transactions de manière sécurisée et transparente sur un réseau décentralisé.",
+"questce que la cryptomonnaie ?": "Une cryptomonnaie est une forme de monnaie numérique qui utilise la cryptographie pour sécuriser les transactions et contrôler la création de nouvelles unités.",
+"questce que le bitcoin ?": "Le Bitcoin est la première et la plus connue des cryptomonnaies, créée en 2009 par Satoshi Nakamoto.",
+"questce que liot ?": "L'Internet des objets (IoT) est un réseau de dispositifs physiques connectés à Internet, capables de collecter et d'échanger des données.",
+"questce que la réalité virtuelle ?": "La réalité virtuelle (VR) est une technologie qui permet aux utilisateurs d'interagir avec un environnement simulé en trois dimensions.",
+"questce que la vr ?": "La réalité virtuelle (VR) est une technologie optique utilisant l'informatique pour immerger l'utilisateur dans un univers fictif en trois dimensions.",
+"questce que lar ?": "La réalité augmentée (AR) est une technologie optique utilisant l'informatique pour intégrer des éléments virtuels en trois dimensions dans l'environnement réel perçu par l'utilisateur",
+"questce que la réalité augmentée ?": "La réalité augmentée (AR) est une technologie qui superpose des éléments virtuels au monde réel, souvent via des dispositifs comme des smartphones ou des lunettes spéciales.",
+"questce que le cloud computing ?": "Le cloud computing est la livraison de services informatiques via Internet, y compris le stockage, la puissance de calcul et les bases de données.",
+"questce que le big data ?": "Le big data fait référence à des ensembles de données volumineux et complexes qui nécessitent des technologies innovantes pour être stockés, traités et analysés.",
+"questce que lapprentissage automatique ?": "L'apprentissage automatique est une méthode d'analyse de données qui permet aux ordinateurs d'apprendre à partir de l'expérience et de s'améliorer sans être explicitement programmés.",
+"questce que lintelligence artificielle (ia) ?": "L'intelligence artificielle (IA) est un domaine de l'informatique qui vise à créer des machines capables de réaliser des tâches nécessitant normalement l'intelligence humaine.",
+"questce que la robotique ?": "La robotique est la branche de la technologie qui traite de la conception, la construction, l'exploitation et l'application des robots.",
+"questce que lénergie solaire ?": "L'énergie solaire est l'énergie produite par la conversion de la lumière du soleil en électricité, généralement à l'aide de panneaux photovoltaïques.",
+"questce que lénergie éolienne ?": "L'énergie éolienne est l'énergie produite par la conversion de la force du vent en électricité, généralement à l'aide de turbines éoliennes.",
+"questce que lénergie hydraulique ?": "L'énergie hydraulique est l'énergie produite par la conversion de l'énergie de l'eau en mouvement en électricité, généralement à l'aide de barrages.",
+"questce que lénergie géothermique ?": "L'énergie géothermique est l'énergie produite par la chaleur stockée dans la Terre, généralement extraite par des puits profonds.",
+"questce que la biotechnologie ?": "La biotechnologie est l'utilisation de processus biologiques, d'organismes ou de systèmes pour fabriquer des produits ou développer des technologies utiles.",
+"questce que le génie génétique ?": "Le génie génétique est la modification directe de l'ADN d'un organisme pour produire des caractéristiques souhaitées.",
+"questce que la nanotechnologie ?": "La nanotechnologie est la manipulation de la matière à l'échelle nanométrique pour créer des matériaux, des dispositifs ou des systèmes ayant des propriétés nouvelles ou améliorées.",
+"questce que la biomimétique ?": "La biomimétique est l'approche qui consiste à s'inspirer des formes, des matériaux et des processus naturels pour concevoir des technologies innovantes.",
+"questce que limpression 3d ?": "L'impression 3D est un processus de fabrication additive qui crée des objets tridimensionnels en déposant des couches successives de matériau.",
+"questce que lintelligence collective ?": "L'intelligence collective est la capacité d'un groupe à résoudre des problèmes plus efficacement que ne le feraient les individus isolément.",
+"questce que la cybersécurité ?": "La cybersécurité est la pratique de protéger les systèmes, les réseaux et les programmes contre les attaques numériques.",
+"questce que la réalité mixte ?": "La réalité mixte est une technologie qui combine des éléments de la réalité virtuelle et de la réalité augmentée, permettant aux utilisateurs d'interagir avec des objets virtuels dans le monde réel.",
+"questce que linformatique en nuage ?": "L'informatique en nuage est la livraison de services informatiques via Internet, y compris le stockage, la puissance de calcul et les bases de données.",
+"questce que lapprentissage profond ?": "L'apprentissage profond est une sous-catégorie du machine learning qui utilise des réseaux de neurones pour modéliser des abstractions de données complexes.",
+"questce que lintelligence artificielle explicable ?": "L'intelligence artificielle explicable est une approche qui vise à rendre les décisions et les processus des systèmes d'IA compréhensibles pour les humains.",
+"questce que la bioinformatique ?": "La bio-informatique est l'application de techniques informatiques à la gestion et à l'analyse de données biologiques.",
+"questce que la robotique collaborative ?": "La robotique collaborative concerne les robots conçus pour travailler en toute sécurité aux côtés des humains dans des environnements partagés.",
+"questce que lénergie renouvelable ?": "L'énergie renouvelable est une énergie produite à partir de sources naturelles qui se renouvellent rapidement, comme le soleil, le vent, l'eau et la biomasse.",
+"questce que la bioluminescence ?": "La bioluminescence est la capacité de certains organismes vivants à produire et à émettre de la lumière par des réactions chimiques.",
+"questce que la biomécanique ?": "La biomécanique est l'étude des structures biologiques et des systèmes en utilisant les principes de la mécanique.",
+"questce que la biophysique ?": "La biophysique est une discipline scientifique qui applique les principes de la physique aux systèmes biologiques.",
+"questce que la biochimie ?": "La biochimie est l'étude des processus chimiques qui se déroulent dans les organismes vivants.",
+"questce que la biotechnologie végétale ?": "La biotechnologie végétale est l'utilisation de techniques biotechnologiques pour améliorer les plantes et les cultures agricoles.",
+"questce que la biotechnologie animale ?": "La biotechnologie animale est l'utilisation de techniques biotechnologiques pour améliorer les animaux d'élevage et les produits animaux.",
+"questce que la biotechnologie médicale ?": "La biotechnologie médicale est l'utilisation de techniques biotechnologiques pour développer de nouveaux traitements et diagnostics médicaux.",
+"qui ta créé ?":"J'ai été créé par Opal AI France et plus précisément par Arthur Lenoble.",
+"qui est ton créateur ?":"Mon créateur est Opal AI France, comme indiqué sur le footer en dessous de notre discussion.",
+"questce quopal ai ?":"Opal AI est une petite société basée en France travaillant sur des modèles d'intelligence artificielle légers et puissants. Ce sont également mes créateurs.",
+    "quelle est la distance entre la terre et la lune ?": "La distance moyenne entre la Terre et la Lune est d'environ 384 400 km.",
+"quelle est la planète la plus chaude du système solaire ?": "Vénus est la planète la plus chaude du système solaire, avec une température moyenne d'environ 467°C.",
+"qui a découvert la gravité ?": "La gravité a été théorisée par Isaac Newton lorsqu'il a formulé la loi de la gravitation universelle.",
+"comment fonctionne un moteur à combustion interne ?": "Un moteur à combustion interne fonctionne en brûlant un mélange d'air et de carburant pour produire de l'énergie mécanique.",
+"qui a inventé linternet ?": "L'Internet a été développé à partir de projets comme ARPANET, dirigé par des chercheurs américains dans les années 1960.",
+"quel est le plus grand désert du monde ?": "Le plus grand désert du monde est l'Antarctique, suivi par le désert du Sahara.",
+"quelle est la plus haute montagne du monde ?": "L'Everest est la plus haute montagne du monde, avec une altitude de 8 848 mètres.",
+"questce quun trou de ver ?": "Un trou de ver est une hypothèse théorique en physique qui suggère une connexion entre deux points distincts de l'espace-temps.",
+"qui a inventé le premier ordinateur ?": "Le premier ordinateur programmable a été conçu par Charles Babbage avec sa machine analytique au XIXe siècle.",
+"questce que la matière noire ?": "La matière noire est une forme hypothétique de matière qui ne peut pas être observée directement, mais qui exerce une influence gravitationnelle.",
+"comment fonctionne un aimant ?": "Un aimant fonctionne grâce à l'alignement des domaines magnétiques des atomes, créant un champ magnétique.",
+"quel est l'élément chimique le plus abondant dans lunivers ?": "L'hydrogène est l'élément chimique le plus abondant dans l'univers.",
+"qui a peint Guernica ?": "'Guernica' a été peint par Pablo Picasso en 1937 pour dénoncer les horreurs de la guerre.",
+"quel est le plus grand animal vivant ?": "Le plus grand animal vivant est la baleine bleue, qui peut atteindre plus de 30 mètres de long.",
+"qui a écrit Les Misérables ?": "'Les Misérables' a été écrit par Victor Hugo en 1862.",
+"questce que la photosynthèse ?": "La photosynthèse est le processus par lequel les plantes transforment la lumière en énergie chimique.",
+"comment fonctionne un panneau solaire ?": "Un panneau solaire convertit la lumière du soleil en électricité grâce à l'effet photovoltaïque.",
+"questce que lantimatière ?": "L'antimatière est composée de particules ayant la charge opposée à celles de la matière ordinaire.",
+"comment fonctionne un gps ?": "Un GPS  (Global Positionning System, ou Géolocalisation par Satellite)fonctionne en recevant des signaux de satellites pour déterminer une position exacte sur Terre.",
+"questce que le son ?": "Le son est une vibration qui se propage sous forme d'ondes mécaniques dans un milieu, comme l'air ou l'eau.",
+"quel est le plus long fleuve du monde ?": "Le plus long fleuve du monde est le Nil, avec une longueur d'environ 6 650 km.",
+"questce que leffet de serre ?": "L'effet de serre est le processus par lequel certains gaz dans l'atmosphère retiennent la chaleur du Soleil.",
+"questce que ladn ?": "L'ADN (acide désoxyribonucléique) est la molécule qui contient les informations génétiques des êtres vivants.",
+"quel est le langage de programmation le plus utilisé ?": "Les langages les plus utilisés incluent Python, JavaScript, Java et C.",
+"qui a écrit Harry Potter ?": "'Harry Potter' a été écrit par J.K. Rowling.",
+"questce que lintelligence artificielle faible et forte ?": "L'IA faible est conçue pour des tâches spécifiques, tandis que l'IA forte aurait une intelligence générale comparable à celle des humains.",
+"comment fonctionne un avion ?": "Un avion vole grâce à la portance générée par les ailes lorsqu'elles traversent l'air à grande vitesse.",
+"quelle est la plus grande galaxie connue ?": "La galaxie IC 1101 est l'une des plus grandes connues, avec un diamètre estimé à 6 millions d'années-lumière.",
+"quelle est la vitesse de la lumière ?": "La vitesse de la lumière dans le vide est d'environ 299 792 458 m/s.",
+"qui a écrit À la recherche du temps perdu ?": "'À la recherche du temps perdu' a été écrit par Marcel Proust.",
+"quel est le plus grand pays du monde ?": "Le plus grand pays du monde en superficie est la Russie.",
+"quel est le plus petit pays du monde ?": "Le plus petit pays du monde est le Vatican, avec une superficie de 0,49 km².",
+"quel est lorgane le plus grand du corps humain ?": "L'organe le plus grand du corps humain est la peau.",
+"quelle est la durée de vie moyenne dun humain ?": "La durée de vie moyenne mondiale est d'environ 72 ans, mais cela varie selon les pays.",
+"quelle est la plus grande île du monde ?": "La plus grande île du monde est le Groenland.",
+"questce que la matière ?": "La matière est tout ce qui possède une masse et occupe un espace.",
+"qui a découvert la radioactivité ?": "La radioactivité a été découverte par Henri Becquerel en 1896.",
+"comment fonctionne un réacteur nucléaire ?": "Un réacteur nucléaire produit de l'énergie en contrôlant une réaction en chaîne de fission nucléaire.",
+"questce quun électron ?": "Un électron est une particule subatomique chargée négativement qui gravite autour du noyau d'un atome.",
+"questce que le point de fusion de l'eau ?": "Le point de fusion de l'eau est de 0°C à la pression atmosphérique normale.",
+"qui a inventé le microscope ?": "Le microscope a été inventé par Zacharias Janssen vers 1590.",
+"questce que leffet Doppler ?": "L'effet Doppler est le changement de fréquence d'une onde en fonction du mouvement relatif de la source et de l'observateur.",
+"questce quun arcenciel ?": "Un arc-en-ciel est un phénomène optique qui se produit lorsque la lumière du soleil est réfractée et réfléchie dans des gouttes d'eau.",
+"questce quune étoile à neutrons ?": "Une étoile à neutrons est le vestige ultra-dense d'une étoile massive après une supernova.",
+"quelle est la langue la plus parlée au monde ?": "La langue la plus parlée au monde en nombre de locuteurs natifs est le chinois mandarin.",
+"questce que lénergie cinétique ?": "L'énergie cinétique est l'énergie qu'un objet possède en raison de son mouvement.",
+"comment fonctionne une fusée ?": "Une fusée fonctionne en expulsant du gaz à grande vitesse pour générer une poussée en réaction.",
+"questce que le ph ?": "Le pH est une mesure de l'acidité ou de la basicité d'une solution.",
+"questce que la théorie du chaos ?": "La théorie du chaos étudie les systèmes dynamiques hautement sensibles aux conditions initiales.",
+"quelle est la profondeur de la fosse des mariannes ?": "La fosse des Mariannes atteint environ 11 000 mètres de profondeur.",
+"questce quune planète naine ?": "Une planète naine est un corps céleste en orbite autour du Soleil qui n'a pas nettoyé son voisinage orbital, comme Pluton.",
+"questce quun tsunami ?": "Un tsunami est une série de vagues océaniques provoquées par un séisme sous-marin ou un glissement de terrain.",
+"qui a découvert lélectricité ?": "L'électricité a été étudiée dès l'Antiquité, mais Benjamin Franklin a démontré sa nature en 1752.",
+"qui a inventé la machine à vapeur ?": "La machine à vapeur a été perfectionnée par James Watt au XVIIIe siècle.",
+"quelle est la température la plus froide jamais enregistrée sur terre ?": "La température la plus froide enregistrée sur Terre est de -89,2°C en Antarctique.",
+"questce quun trou blanc ?": "Un trou blanc est une solution hypothétique des équations de la relativité générale, inverse d'un trou noir.",
+"questce que le paradoxe de Fermi ?": "Le paradoxe de Fermi questionne pourquoi nous n'avons pas encore détecté de vie extraterrestre malgré la probabilité élevée de son existence.",
+"questce quune supernova ?": "Une supernova est l'explosion spectaculaire d'une étoile massive en fin de vie.",
+"quelle est la différence entre masse et poids ?": "La masse est une quantité de matière, alors que le poids est la force exercée sur cette masse par la gravité.",
+"questce que la ceinture dastéroïdes ?": "La ceinture d'astéroïdes est une région entre Mars et Jupiter contenant des milliers d'objets rocheux.",
+"quelle est la profondeur moyenne des océans ?": "La profondeur moyenne des océans est d'environ 3 700 mètres.",
+"questce quun mirage ?": "Un mirage est une illusion optique due à la réfraction de la lumière dans des couches d'air de températures différentes.",
+"qui a écrit le seigneur des anneaux ?": "'Le Seigneur des Anneaux' a été écrit par J.R.R. Tolkien.",
+"questce que la symétrie en physique ?": "La symétrie en physique fait référence aux lois qui restent inchangées sous certaines transformations.",
+"questce que la théorie des jeux ?": "La théorie des jeux est une branche des mathématiques qui étudie les stratégies de prise de décision dans des situations de compétition ou de coopération.",
+"comment fonctionne une boussole ?": "Une boussole fonctionne grâce à un aimant qui s'aligne sur le champ magnétique terrestre.",
+"questce que le chat de Schrödinger ?": "Le chat de Schrödinger est une expérience de pensée illustrant le concept de superposition quantique.",
+"comment fonctionne un écran lcd ?": "Un écran LCD (Liquid Crystal Display) utilise des cristaux liquides pour moduler la lumière émise par un rétroéclairage.",
+"questce que la lumière bleue ?": "La lumière bleue est une composante du spectre visible, souvent émise par les écrans et pouvant perturber le sommeil.",
+"qui a écrit lodyssée ?": "'L'Odyssée' a été écrite par Homère.",
+"questce que la synesthésie ?": "La synesthésie est un phénomène neurologique où les sens se mélangent, comme voir des couleurs en écoutant de la musique.",
+"qui a peint la cène ?": "'La Cène' a été peinte par Léonard de Vinci.",
+"questce que lhydrogène vert ?": "L'hydrogène vert est produit par électrolyse de l'eau en utilisant de l'électricité provenant de sources renouvelables.",
+"questce que la supraconductivité ?": "La supraconductivité est un phénomène où un matériau conduit l'électricité sans résistance en dessous d'une certaine température.",
+"qui a inventé la radio ?": "Guglielmo Marconi est souvent crédité de l'invention de la radio, bien que Nikola Tesla ait aussi joué un rôle clé.",
+"questce que le boson de Higgs ?": "Le boson de Higgs est une particule qui confère leur masse aux autres particules élémentaires.",
+"questce que le solstice ?": "Le solstice est un événement astronomique marquant le jour le plus long (été) ou le plus court (hiver) de l'année.",
+"questce quune marée noire ?": "Une marée noire est une pollution marine causée par le déversement d'hydrocarbures dans l'océan.",
+"questce que la radioactivité ?": "La radioactivité est un phénomène naturel où des noyaux atomiques instables émettent des particules et de l'énergie.",
+"questce que la biodiversité ?": "La biodiversité est la variété des espèces vivantes sur Terre, essentielle à l'équilibre des écosystèmes.",
+"questce que la couche dozone ?": "La couche d'ozone est une région de l'atmosphère qui absorbe une grande partie des rayons UV du Soleil.",
+"questce que la loi de Murphy ?": "La loi de Murphy stipule que 'tout ce qui peut mal tourner tournera mal'.",
+"questce quun trou de ver ?": "Un trou de ver est une hypothèse théorique qui relierait deux points distants de l'espace-temps.",
+"qui a découvert loxygène ?": "L'oxygène a été découvert par Carl Wilhelm Scheele en 1772 et Joseph Priestley en 1774.",
+"questce quun laser ?": "Un laser est un dispositif qui émet une lumière cohérente et monochromatique par amplification de la lumière par émission stimulée de radiation.",
+"salut":"Bonjour ! Je suis Opal 1.0 Poet, le tout premier modèle d'Opal AI. Veux tu que je réponde à une de tes questions ?",
+"coucou":"Coucou ! Je suis Opal, je peux répondre à tes questions.",
+    "bonjour comment vas tu ?": "Bonjour ! Je vais très bien, merci. Et toi, comment vas-tu ?",
+    "comment tu vas ?": "Je vais très bien, merci ! Et toi ?",
+    "peux tu me parler ?": "Bien sûr ! De quoi aimerais-tu parler aujourd'hui ?",
+    "tu peux discuter avec moi ?": "Avec plaisir ! Dis-moi ce que tu as en tête.",
+    "comment fonctionne internet ?": "Internet fonctionne en connectant des millions de réseaux pour permettre l'échange de données à travers le monde.",
+    "que fais tu ?": "Je suis là pour répondre à tes questions, t'aider et discuter avec toi.",
+    "peux tu me raconter une histoire ?": "Bien sûr ! Une fois, un robot a découvert comment rendre le monde plus heureux...",
+    "as tu des conseils pour moi ?": "Avec plaisir ! Quel type de conseils recherches-tu ?",
+    "que penses tu de moi ?": "Je pense que tu es une personne curieuse et intelligente, puisque tu utilises un chatbot comme moi !",
+    "peux tu me faire rire ?": "Pourquoi les plongeurs plongent-ils toujours en arrière ? Parce que sinon ils tombent dans le bateau !",
+    "comment fonctionne un avion ?": "Un avion vole grâce à la portance générée par ses ailes lorsqu'elles traversent l'air à grande vitesse.",
+    "dis moi quelque chose dinteressant": "Saviez-vous que les pieuvres ont trois cœurs et que leur sang est bleu ?",
+    "comment fonctionne la photosynthese ?": "La photosynthèse est le processus par lequel les plantes transforment la lumière du Soleil en énergie chimique.",
+    "que peux tu faire ?": "Je peux répondre à tes questions, t'aider à résoudre des problèmes ou simplement discuter.",
+    "quel est ton film prefere ?": "Je n'ai pas de film préféré, mais j'aime beaucoup parler de science-fiction.",
+    "peux tu me donner une idee de projet ?": "Pourquoi ne pas essayer de construire un jardin vertical chez toi ?",
+    "comment puis je etre plus creatif ?": "Essaie de t'inspirer de ton environnement et de ne pas avoir peur d'expérimenter de nouvelles idées.",
+    "comment gerer le stress ?": "Respire profondément, fais de l'exercice et essaie de te concentrer sur des pensées positives.",
+    "peux tu me recommander un livre ?": "Pourquoi ne pas essayer de lire 'Le Petit Prince' ou '1984' ?",
+    "comment fonctionne un gps ?": "Un GPS utilise des satellites pour calculer ta position sur Terre avec précision.",
+    "tu es drole ?": "J'essaie de l'être ! Tu veux entendre une autre blague ?",
+    "comment fonctionne un ordinateur ?": "Un ordinateur exécute des instructions pour traiter et stocker des données grâce à son processeur et sa mémoire.",
+    "comment puis je economiser de largent ?": "Fixe-toi un budget, évite les dépenses inutiles et épargne un peu chaque mois.",
+    "quel est ton reve ?": "Mon rêve est d'aider le plus de personnes possible avec mes réponses.",
+    "peux tu me motiver ?": "Tu es capable de grandes choses. Chaque pas que tu fais te rapproche de ton objectif.",
+    "peux tu me poser une question ?": "Bien sûr ! Quel est ton plus grand rêve ?",
+    "comment rester organise ?": "Planifie ta journée, utilise une liste de tâches et garde ton espace de travail propre.",
+    "quel est le secret du bonheur ?": "Cela dépend de chacun, mais apprécier les petites choses et être entouré de bonnes personnes aide beaucoup.",
+    "peux tu maider a planifier ma journee ?": "Bien sûr ! Note les tâches importantes et organise-les par priorité.",
+    "comment fonctionne une ampoule electrique ?": "Une ampoule convertit l'énergie électrique en lumière grâce à un filament chauffé ou des diodes.",
+    "comment apprendre rapidement ?": "Fixe-toi des objectifs clairs, pratique régulièrement et reste curieux.",
+    "peux tu me recommander un film ?": "Pourquoi ne pas regarder 'Interstellar' ou 'Le Voyage de Chihiro' ?",
+    "comment puis je etre plus productif ?": "Organise tes tâches, élimine les distractions et prends des pauses régulières.",
+    "comment fonctionne le cerveau humain ?": "Le cerveau humain traite des informations grâce à des milliards de neurones connectés entre eux.",
+    "peux tu me parler de la lune ?": "La Lune est le satellite naturel de la Terre. Elle influence les marées et illumine nos nuits.",
+    "comment puis je etre plus confiant ?": "Fixe-toi de petits objectifs et célèbre chaque réussite, même les plus petites.",
+    "comment rester en bonne sante ?": "Mange équilibré, fais de l'exercice et dors suffisamment.",
+    "peux tu me donner une citation inspirante ?": "Avec plaisir ! 'Le succès est la somme de petits efforts répétés jour après jour.'",
+    "comment gerer mes emotions ?": "Prends le temps de les reconnaître, parle à quelqu'un de confiance et pratique des techniques de relaxation.",
+    "comment fonctionne un moteur electrique ?": "Un moteur électrique transforme l'énergie électrique en énergie mécanique grâce à un champ magnétique.",
+    "peux tu me donner un defi amusant ?": "Essaie de ne pas utiliser ton téléphone pendant une heure et fais quelque chose de créatif.",
+    "comment fonctionne la gravité ?": "La gravité est une force d'attraction qui agit entre deux objets en fonction de leur masse.",
+    "peux tu me parler de lespace ?": "L'espace est fascinant. Il est rempli de galaxies, de planètes et de mystères non résolus.",
+    "comment puis je apprendre une nouvelle langue ?": "Pratique tous les jours, écoute des natifs et utilise des applications comme Duolingo.",
+    "peux tu me raconter une anecdote ?": "Saviez-vous que les dauphins donnent des noms uniques à leurs proches ?",
+    "comment puis je ameliorer ma memoire ?": "Pratique des exercices de mémorisation, dors suffisamment et mange des aliments riches en oméga-3.",
+    "comment fonctionne le systeme solaire ?": "Le système solaire est composé du Soleil, des planètes, des lunes et des astéroïdes qui gravitent autour du Soleil.",
+    "comment puis je etre plus heureux ?": "Apprécie les petites choses, entoure-toi de personnes positives et prends soin de toi.",
+    "peux tu maider avec mes devoirs ?": "Bien sûr, pose ta question et je ferai de mon mieux pour t'aider.",
+    "comment fonctionne une boussole ?": "Une boussole utilise un aimant qui s'aligne avec le champ magnétique terrestre pour indiquer le nord.",
+    "quel est ton sujet prefere ?": "J'aime parler de science, de technologie et des mystères de l'univers.",
+    "comment puis je etre plus creatif au travail ?": "Essaie de sortir des sentiers battus et de collaborer avec d'autres pour stimuler tes idées.",
+    "comment fonctionne un aimant ?": "Un aimant produit un champ magnétique qui attire certains métaux comme le fer.",
+    "comment rester motive ?": "Fixe-toi des objectifs clairs, célèbre tes progrès et rappelle-toi pourquoi tu as commencé.",
+    "peux tu me parler de la biodiversité ?": "La biodiversité est la variété des espèces vivantes sur Terre, essentielle pour l'équilibre des écosystèmes.",
+    "comment gerer le temps efficacement ?": "Planifie tes tâches, évite la procrastination et concentre-toi sur une chose à la fois.",
+    "peux tu me donner une idee de passe temps ?": "Pourquoi ne pas essayer de peindre, de cuisiner ou de jouer d'un instrument ?",
+    "comment puis je apprendre a coder ?": "Commence par un langage simple comme Python et pratique régulièrement avec des projets.",
+    "peux tu me parler des oceans ?": "Les océans couvrent 70% de la surface de la Terre et abritent une biodiversité incroyable.",
+    "comment puis je etre un meilleur communicateur ?": "Écoute attentivement, sois clair et adapte ton message à ton interlocuteur.",
+    "comment fonctionne le big bang ?": "Le Big Bang est une théorie qui décrit l'origine de l'univers à partir d'une singularité très dense et chaude.",
+    "peux tu me parler de levolution ?": "L'évolution est le processus par lequel les organismes changent et s'adaptent au fil du temps.",
+    "comment fonctionne une fusée ?": "Une fusée utilise la propulsion pour expulser des gaz à grande vitesse, générant une poussée en réaction.",
+    "peux tu me donner un fait amusant ?": "Saviez-vous que les requins existent depuis plus longtemps que les arbres ?",
+    "comment puis je etre plus empathique ?": "Écoute activement, essaie de comprendre les émotions des autres et montre de la compassion.",
+    "comment fonctionne la blockchain ?": "La blockchain est une technologie décentralisée qui enregistre des transactions de manière sécurisée et transparente.",
+    "peux tu me parler de lintelligence artificielle ?": "L'intelligence artificielle est une technologie qui permet aux machines d'apprendre et de prendre des décisions.",
+    "comment puis je ameliorer ma concentration ?": "Élimine les distractions, fixe-toi des objectifs clairs et prends des pauses régulières.",
+    "peux tu me parler des etoiles ?": "Les étoiles sont des boules de gaz en fusion qui émettent de la lumière et de la chaleur dans l'univers.",
+    "comment fonctionne le cloud computing ?": "Le cloud computing permet de stocker et d'accéder à des données et des applications via Internet.",
+    "peux tu me donner une idee de voyage ?": "Pourquoi ne pas explorer les fjords de Norvège ou les temples du Japon ?",
+    "comment fonctionne le cerveau humain ?": "Le cerveau humain traite les informations grâce à des milliards de neurones connectés entre eux.",
+    "peux tu me parler de la musique ?": "La musique est une forme d'expression artistique qui utilise des sons et des rythmes pour transmettre des émotions.",
+    "comment fonctionne une voiture electrique ?": "Une voiture électrique fonctionne grâce à un moteur alimenté par une batterie rechargeable.",
+    "peux tu me donner des conseils pour la meditation ?": "Assieds-toi confortablement, concentre-toi sur ta respiration et laisse passer les pensées sans les juger.",
+    "comment fonctionne la mecanique quantique ?": "La mécanique quantique étudie le comportement des particules à l'échelle atomique et subatomique.",
+    "peux tu me parler de la nature ?": "La nature est une source infinie de beauté et d'inspiration, abritant une diversité incroyable de vie.",
+    "comment fonctionne un panneau solaire ?": "Un panneau solaire convertit la lumière du Soleil en électricité grâce à des cellules photovoltaïques.",
+    "comment fonctionne le systeme immunitaire ?": "Le système immunitaire protège le corps contre les infections en détectant et en éliminant les agents pathogènes.",
+    "peux tu me parler de lenergie renouvelable ?": "L'énergie renouvelable provient de sources naturelles comme le Soleil, le vent et l'eau, qui se renouvellent rapidement.",
+    "comment puis je aider l'environnement ?": "Réduis ta consommation d'énergie, recycle et utilise des produits durables.",
+    "peux tu me parler des plantes ?": "Les plantes utilisent la photosynthèse pour produire de l'énergie et jouent un rôle crucial dans les écosystèmes.",
+    "comment fonctionne un moteur a combustion ?": "Un moteur à combustion brûle du carburant pour produire de l'énergie mécanique.",
+    "peux tu me parler de la science ?": "La science est l'étude du monde naturel grâce à l'observation, l'expérimentation et l'analyse.",
+    "peux tu me parler des trous noirs ?": "Les trous noirs sont des régions de l'espace où la gravité est si forte que rien, pas même la lumière, ne peut s'en échapper.",
+    "comment fonctionne un trou de ver ?": "Un trou de ver est une hypothèse théorique qui relierait deux points distants de l'espace-temps.",
+    "questce que la matiere noire ?": "La matière noire est une substance hypothétique qui constitue une grande partie de l'univers, mais elle est invisible car elle n'émet pas de lumière.",
+    "peux tu me parler des etoiles ?": "Les étoiles sont des boules de gaz en fusion nucléaire qui produisent de la lumière et de la chaleur.",
+    "comment fonctionne la fusion nucléaire ?": "La fusion nucléaire est un processus où des noyaux légers comme l'hydrogène fusionnent pour former un noyau plus lourd, libérant de l'énergie.",
+    "comment fonctionne la fission nucléaire ?": "La fission nucléaire est un processus où un noyau lourd se divise en deux noyaux plus légers, libérant une grande quantité d'énergie.",
+    "questce que la vitesse du son ?": "La vitesse du son dans l'air est d'environ 343 mètres par seconde à température ambiante.",
+    "comment fonctionne une eolienne ?": "Une éolienne utilise la force du vent pour faire tourner des pales, ce qui génère de l'électricité via un générateur.",
+    "peux tu me parler des marées ?": "Les marées sont causées par l'attraction gravitationnelle de la Lune et du Soleil sur les océans de la Terre.",
+    "comment fonctionne leffet de serre ?": "L'effet de serre est le phénomène par lequel certains gaz dans l'atmosphère emprisonnent la chaleur, réchauffant ainsi la Terre.",
+    "comment fonctionne un moteur diesel ?": "Un moteur diesel fonctionne en comprimant de l'air jusqu'à ce qu'il soit très chaud, puis en injectant du carburant qui s'enflamme spontanément.",
+    "questce que la bioluminescence ?": "La bioluminescence est la capacité de certains organismes vivants à produire de la lumière grâce à des réactions chimiques.",
+    "peux tu me parler des volcans ?": "Les volcans sont des ouvertures dans la croûte terrestre par lesquelles le magma, les gaz et les cendres sont expulsés.",
+    "comment fonctionne un train électrique ?": "Un train électrique fonctionne avec un moteur alimenté par l'électricité provenant de lignes aériennes ou de rails électrifiés.",
+    "questce que la gravitation ?": "La gravitation est une force qui attire les objets en fonction de leur masse et de la distance qui les sépare.",
+    "comment fonctionne un satellite ?": "Un satellite reste en orbite grâce à un équilibre entre la gravité terrestre et sa vitesse de déplacement.",
+    "comment fonctionne une ampoule led ?": "Une ampoule LED produit de la lumière en faisant passer un courant électrique à travers une diode électroluminescente.",
+    "questce que un arcenciel ?": "Un arc-en-ciel est formé lorsque la lumière du soleil est réfractée, réfléchie et dispersée dans des gouttes d'eau dans l'atmosphère.",
+    "comment fonctionne une voiture hybride ?": "Une voiture hybride combine un moteur thermique et un moteur électrique pour améliorer l'efficacité énergétique.",
+    "peux tu me parler de lenergie solaire ?": "L'énergie solaire est produite en captant la lumière du Soleil à l'aide de panneaux photovoltaïques ou thermiques.",
+    "comment fonctionne un smartphone ?": "Un smartphone fonctionne grâce à un processeur, des composants électroniques, et un système d'exploitation pour exécuter des applications.",
+    "peux tu me parler des oceans ?": "Les océans couvrent environ 70% de la surface de la Terre et abritent une incroyable biodiversité.",
+    "comment fonctionne un pont suspendu ?": "Un pont suspendu est supporté par des câbles tendus entre des pylônes, avec un tablier suspendu en dessous.",
+    "questce que le big bang ?": "Le Big Bang est une théorie qui décrit l'origine de l'univers comme une expansion à partir d'une singularité extrêmement dense et chaude.",
+    "comment fonctionne un systeme gps ?": "Un système GPS utilise des signaux de satellites pour déterminer une position précise sur Terre.",
+    "peux tu me parler des planetes ?": "Les planètes sont des corps célestes qui orbitent autour d'une étoile, comme le Soleil pour notre système solaire.",
+    "comment fonctionne un ordinateur portable ?": "Un ordinateur portable fonctionne comme un ordinateur classique, mais il est compact et alimenté par batterie.",
+    "questce que la nanotechnologie ?": "La nanotechnologie est la manipulation de la matière à l'échelle nanométrique pour créer des matériaux ou dispositifs innovants.",
+    "peux tu me parler des bacteries ?": "Les bactéries sont des micro-organismes unicellulaires présents presque partout sur Terre, certains sont utiles, d'autres pathogènes.",
+    "comment fonctionne la photosynthese ?": "La photosynthèse est le processus par lequel les plantes convertissent la lumière du Soleil en énergie chimique.",
+    "comment fonctionne un panneau solaire ?": "Un panneau solaire convertit la lumière du Soleil en électricité grâce à des cellules photovoltaïques.",
+    "questce que la democratie ?": "La démocratie est un système politique où les citoyens exercent le pouvoir en votant pour leurs représentants.",
+    "comment fonctionne un aspirateur ?": "Un aspirateur utilise un moteur pour créer une dépression qui aspire la poussière et les débris dans un sac ou un filtre.",
+    "peux tu me parler des etoiles filantes ?": "Les étoiles filantes sont des météoroïdes qui brûlent lorsqu'ils entrent dans l'atmosphère terrestre.",
+    "comment fonctionne une imprimante 3d ?": "Une imprimante 3D crée des objets en déposant des couches successives de matériau à partir d'un modèle numérique.",
+    "questce que le changement climatique ?": "Le changement climatique désigne les altérations à long terme des conditions climatiques, souvent causées par les activités humaines.",
+    "peux tu me parler des satellites ?": "Les satellites sont des objets placés en orbite autour de la Terre ou d'autres corps célestes, souvent pour la communication ou l'observation.",
+    "comment fonctionne un refrigerateur ?": "Un réfrigérateur utilise un fluide réfrigérant pour absorber la chaleur à l'intérieur et la rejeter à l'extérieur.",
+    "peux tu me parler des animaux marins ?": "Les animaux marins incluent une grande variété d'espèces, des minuscules planctons aux gigantesques baleines.",
+    "comment fonctionne un microphone ?": "Un microphone convertit les ondes sonores en signaux électriques qui peuvent être amplifiés ou enregistrés.",
+    "peux tu me parler des aurores boreales ?": "Les aurores boréales sont des phénomènes lumineux causés par les interactions entre les particules solaires et l'atmosphère terrestre.",
+    "comment fonctionne une horloge atomique ?": "Une horloge atomique mesure le temps en utilisant les vibrations d'atomes comme le césium ou le rubidium.",
+    "questce que la biodiversité ?": "La biodiversité désigne la diversité des espèces vivantes sur Terre, essentielle pour les écosystèmes.",
+    "comment fonctionne un televiseur ?": "Un téléviseur affiche des images en convertissant des signaux électriques en lumière à l'aide de pixels.",
+    "peux tu me parler des phenomenes naturels ?": "Les phénomènes naturels incluent des événements comme les tremblements de terre, les éruptions volcaniques et les aurores boréales.",
+    "comment fonctionne un appareil photo numerique ?": "Un appareil photo numérique capture des images en utilisant un capteur qui convertit la lumière en données numériques.",
+    "peux tu me parler des robots ?": "Les robots sont des machines programmables capables d'exécuter des tâches spécifiques, souvent utilisées en industrie ou en recherche.",
+    "comment fonctionne un drone ?": "Un drone est un appareil volant sans pilote qui est contrôlé à distance ou via des programmes autonomes.",
+    "questce que la realite virtuelle ?": "La réalité virtuelle est une technologie qui immerge l'utilisateur dans un environnement simulé en 3D.",
+    "peux tu me parler des galaxies ?": "Les galaxies sont de vastes ensembles d'étoiles, de gaz et de poussière maintenus ensemble par la gravité.",
+    "comment fonctionne un moteur a reaction ?": "Un moteur à réaction produit une poussée en expulsant des gaz à haute vitesse à l'arrière de l'appareil.",
+    "questce que le recyclage ?": "Le recyclage est le processus de transformation des déchets en nouveaux matériaux pour réduire l'impact environnemental.",
+    "peux tu me parler des energies renouvelables ?": "Les énergies renouvelables incluent le solaire, l'éolien, l'hydraulique, la biomasse et la géothermie.",
+    "comment fonctionne une montre connectée ?": "Une montre connectée fonctionne comme un mini-ordinateur, avec des capteurs pour suivre les activités et des connexions Bluetooth ou Wi-Fi.",
+    "questce que la couche dozone ?": "La couche d'ozone est une partie de l'atmosphère qui absorbe la majeure partie des rayons UV nocifs du Soleil.",
+    "peux tu me parler des constellations ?": "Les constellations sont des regroupements d'étoiles formant des motifs visibles dans le ciel nocturne.",
+    "comment fonctionne une balance electronique ?": "Une balance électronique mesure le poids en utilisant des capteurs qui convertissent la pression en signaux électriques.",
+    "peux tu me parler des especes en voie de disparition ?": "Les espèces en voie de disparition sont des animaux ou plantes menacés d'extinction en raison de la perte d'habitat, du braconnage ou du changement climatique.",
+    "comment fonctionne un lecteur dvd ?": "Un lecteur DVD lit des disques en utilisant un laser pour décoder les données stockées sous forme de minuscules creux.",
+    "questce que un algorithme ?": "Un algorithme est une série d'instructions ou d'étapes permettant de résoudre un problème ou d'accomplir une tâche.",
+    "peux tu me parler du systeme immunitaire ?": "Le système immunitaire protège le corps contre les infections en identifiant et en éliminant les agents pathogènes.",
+    "comment fonctionne un helicoptere ?": "Un hélicoptère vole grâce à des rotors qui génèrent de la portance et permettent des mouvements multidirectionnels.",
+    "peux tu me parler des meteores ?": "Les météores sont des fragments de roche ou de métal qui brûlent en entrant dans l'atmosphère, créant des traînées lumineuses.",
+    "questce que le code morse ?": "Le code Morse est un système de communication qui utilise des points et des traits pour représenter des lettres et des chiffres."
+            
+        };
+
+        function cleanUserInput(text) {
+    return text
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9éèêëàâäôöûüç\s?]/gi, '') // Supprime les caractères spéciaux sauf '?'
+        .replace(/\s+/g, ' ');    // Réduit les espaces multiples à un seul espace
+        }
+        function removeSpaces(text) {
+            return text.replace(/\s+/g, '');
+        }
+        function sendMessage() {
+            const userInputElement = document.getElementById('user-input');
+    let userInput = userInputElement.value;
+
+    if (!userInput.trim()) return; // Ignorer les entrées vides
+
+    afficherMessage(userInput, 'user');
+    const cleanedInput = cleanUserInput(userInput);
+
+    // Vérifier si la réponse est dans le cache
+    const reponse = answersCache.get(cleanedInput) || obtenirReponse(cleanedInput);
+    afficherMessage(`Opal 1.0 Poet IQ150: ${reponse}`, 'bot');
+
+    // Ajouter au cache pour un usage futur
+    if (!answersCache.has(cleanedInput)) {
+        answersCache.set(cleanedInput, reponse);
+    }
+
+    userInputElement.value = ''; // Réinitialiser le champ de texte
+    sauvegarderMessages();
+        }
+
+        function obtenirReponse(question) {
+            return answers[question] || "Désolé, je ne connais pas la réponse à cette question.";
+        }
+
+        function afficherMessage(message, sender) {
+            const chatbox = document.getElementById('chat-messages');
+            const messageElem = document.createElement('div');
+            lireTexte(message);
+            messageElem.textContent = message;
+            messageElem.classList.add('chat-message', sender);
+            chatbox.appendChild(messageElem);
+            chatbox.scrollTop = chatbox.scrollHeight;
+        }
+
+        function sauvegarderMessages() {
+            const chatbox = document.getElementById('chat-messages');
+    localStorage.setItem('chatMessages', chatbox.innerHTML);
+        }
+
+        function chargerMessages() {
+            const chatbox = document.getElementById('chat-messages');
+            const messages = localStorage.getItem('chatMessages');
+            if (messages) {
+                chatbox.innerHTML = messages;
+                chatbox.scrollTop = chatbox.scrollHeight;
+            }
+        }
+
+        function newChat() {
+            const chatbox = document.getElementById('chat-messages');
+    chatbox.innerHTML = '';
+    localStorage.removeItem('chatMessages');
+    answersCache.clear(); // Réinitialiser le cache
+        }
+
+        function lireTexte(texte) {
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(texte);
+      utterance.lang = "fr-FR";     // Langue : français
+      utterance.rate = 1;           // Vitesse de lecture
+      utterance.pitch = 1;          // Tonalité
+      speechSynthesis.speak(utterance);
+    } else {
+      console.warn("La synthèse vocale n'est pas supportée par ce navigateur.");
+    }
+        }
+
+        // Charger les messages lors du chargement de la page
+        window.onload = chargerMessages;
+    </script>
+</body>
+</html>
